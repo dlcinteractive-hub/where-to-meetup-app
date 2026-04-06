@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { MapPin, Users, Share2, Check } from 'lucide-react'
+import { MapPin, Users, Share2, Check, X } from 'lucide-react'
 import { Venue, Location, Meetup } from '../../lib/types'
 import { supabase } from '../../lib/supabase-client'
 import AddLocationForm from '../../components/meetup/AddLocationForm'
@@ -20,6 +20,8 @@ export default function MeetupPage() {
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [adminToken, setAdminToken] = useState<string | null>(null)
+  const [removingId, setRemovingId] = useState<string | null>(null)
 
   const fetchMeetup = useCallback(async () => {
     try {
@@ -46,6 +48,7 @@ export default function MeetupPage() {
   useEffect(() => {
     if (!token) return
     setHasSubmitted(localStorage.getItem(`submitted_${token}`) === 'true')
+    setAdminToken(localStorage.getItem(`admin_${token}`))
     fetchMeetup()
   }, [token, fetchMeetup])
 
@@ -102,6 +105,25 @@ export default function MeetupPage() {
     setHasSubmitted(true)
   }
 
+  const handleRemoveLocation = async (locationId: string) => {
+    if (!adminToken) return
+    setRemovingId(locationId)
+    try {
+      const res = await fetch('/api/locations', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locationId, adminToken }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        console.error('Remove location error:', data.error)
+      }
+      // Realtime will trigger fetchMeetup — no manual call needed
+    } finally {
+      setRemovingId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="text-center py-16">
@@ -140,13 +162,23 @@ export default function MeetupPage() {
             Who's Joining ({meetup.locations?.length ?? 0})
           </h3>
           <div className="grid gap-2">
-            {meetup.locations?.map((location: Location, index: number) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded">
+            {meetup.locations?.map((location: Location) => (
+              <div key={location.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded">
                 <MapPin size={16} className="mt-1 text-gray-400 shrink-0" />
-                <div>
+                <div className="flex-1 min-w-0">
                   {location.name && <p className="font-medium text-gray-900">{location.name}</p>}
                   <p className="text-sm text-gray-600">{location.address}</p>
                 </div>
+                {adminToken && (meetup.locations?.length ?? 0) > 1 && (
+                  <button
+                    onClick={() => handleRemoveLocation(location.id)}
+                    disabled={removingId === location.id}
+                    title="Remove location"
+                    className="shrink-0 p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
             ))}
           </div>

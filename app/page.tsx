@@ -52,6 +52,10 @@ export default function HomePage() {
 
       if (!response.ok) throw new Error('Failed to create meetup')
       const result = await response.json()
+      // Store admin token so organizer can remove locations on this device
+      if (result.adminToken) {
+        localStorage.setItem(`admin_${result.shareToken}`, result.adminToken)
+      }
       router.push(`/meetup/${result.shareToken}`)
     } catch (error) {
       console.error('Error creating meetup:', error)

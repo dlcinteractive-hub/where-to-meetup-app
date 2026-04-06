@@ -18,6 +18,14 @@ export async function POST(req: NextRequest) {
 
     if (meetupError) throw meetupError
 
+    // Re-fetch to get admin_token (not included in insert select by default)
+    const { data: meetupFull, error: refetchError } = await supabaseAdmin
+      .from('meetups')
+      .select('id, share_token, admin_token')
+      .eq('id', meetup.id)
+      .single()
+    if (refetchError) throw refetchError
+
     const locationsWithId = locations.map((loc: any) => ({ ...loc, meetup_id: meetup.id }))
     const { error: locationsError } = await supabaseAdmin
       .from('locations')
@@ -34,12 +42,12 @@ export async function POST(req: NextRequest) {
         .eq('id', meetup.id)
       if (updateError) throw updateError
       return NextResponse.json(
-        { id: meetup.id, shareToken: meetup.share_token, midpoint },
+        { id: meetup.id, shareToken: meetupFull.share_token, adminToken: meetupFull.admin_token, midpoint },
         { status: 201 }
       )
     }
 
-    return NextResponse.json({ id: meetup.id, shareToken: meetup.share_token }, { status: 201 })
+    return NextResponse.json({ id: meetup.id, shareToken: meetupFull.share_token, adminToken: meetupFull.admin_token }, { status: 201 })
 
   } catch (error) {
     console.error('Error creating meetup:', error)
@@ -58,7 +66,7 @@ export async function GET(req: NextRequest) {
 
     const { data: meetup, error } = await supabaseAdmin
       .from('meetups')
-      .select('*, locations(*), venues(*)')
+      .select('id, title, creator_name, share_token, status, midpoint_lat, midpoint_lng, selected_venue_data, created_at, updated_at, locations(*), venues(*)')
       .eq('share_token', token)
       .single()
 

@@ -1,5 +1,5 @@
 export interface Location {
-  id?: string
+  id: string
   meetup_id?: string
   name: string
   address: string

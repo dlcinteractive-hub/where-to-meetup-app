@@ -4,10 +4,10 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 2 — Invitee Experience (complete) |
-| **Last Verified Good State** | Phase 2 complete. Invitee location flow, Realtime subscriptions, auto venue trigger. 90eaaa73 chore: create CODEBASE.md |
-| **Open Issues** | Rotate Google Maps + Supabase keys. Rename NEXT_PUBLIC_GOOGLE_MAPS_API_KEY → GOOGLE_MAPS_API_KEY in Vercel dashboard. |
-| **Version** | 0.1.2 |
+| **Current Phase** | Phase 3 — Filters, Preferences & Polish (not yet started) |
+| **Last Verified Good State** | Phase 2 complete + organizer location removal. eb4d57f7 chore: document autocomplete bias improvement |
+| **Open Issues** | Rotate Google Maps + Supabase keys. Organizer remove unavailable on different device (no auth — by design, documented). |
+| **Version** | 0.1.3 |
 | **Branch** | main |
 
 **Before starting any Claude Code session:** Read this block + the current phase section below. Do not proceed if Open Issues lists an unresolved blocker.
@@ -85,6 +85,8 @@ See plan below — awaiting Claude Code proposal before any code is written.
 
 ## Phase 3 — Filters, Preferences & Polish
 Not yet started.
+
+**Known limitation: organizer admin token stored in localStorage only. Remove buttons unavailable if organizer opens meetup on a different device. Future fix: email magic link or token recovery UI.**
 
 **Known improvement — autocomplete location bias:**
 Currently defaults to LA (34.0522, -118.2437) when geolocation is unavailable.
