@@ -117,8 +117,9 @@ export default function MeetupPage() {
       if (!res.ok) {
         const data = await res.json()
         console.error('Remove location error:', data.error)
+      } else {
+        await fetchMeetup()
       }
-      // Realtime will trigger fetchMeetup — no manual call needed
     } finally {
       setRemovingId(null)
     }
