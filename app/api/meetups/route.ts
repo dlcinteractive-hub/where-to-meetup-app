@@ -6,8 +6,8 @@ export async function POST(req: NextRequest) {
   try {
     const { title, creatorName, locations } = await req.json()
 
-    if (!locations || locations.length < 2) {
-      return NextResponse.json({ error: 'At least 2 locations are required' }, { status: 400 })
+    if (!locations || locations.length < 1) {
+      return NextResponse.json({ error: 'At least 1 location is required' }, { status: 400 })
     }
 
     const { data: meetup, error: meetupError } = await supabaseAdmin
@@ -19,19 +19,27 @@ export async function POST(req: NextRequest) {
     if (meetupError) throw meetupError
 
     const locationsWithId = locations.map((loc: any) => ({ ...loc, meetup_id: meetup.id }))
-    const { error: locationsError } = await supabaseAdmin.from('locations').insert(locationsWithId)
+    const { error: locationsError } = await supabaseAdmin
+      .from('locations')
+      .insert(locationsWithId)
     if (locationsError) throw locationsError
 
-    const midpoint = await calculateOptimalMidpoint(locations)
+    // With 1 location (organizer only), status stays 'planning' and midpoint stays null.
+    // Midpoint is set by /api/locations when a second person joins.
+    if (locations.length >= 2) {
+      const midpoint = await calculateOptimalMidpoint(locations)
+      const { error: updateError } = await supabaseAdmin
+        .from('meetups')
+        .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng, status: 'voting' })
+        .eq('id', meetup.id)
+      if (updateError) throw updateError
+      return NextResponse.json(
+        { id: meetup.id, shareToken: meetup.share_token, midpoint },
+        { status: 201 }
+      )
+    }
 
-    const { error: updateError } = await supabaseAdmin
-      .from('meetups')
-      .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng })
-      .eq('id', meetup.id)
-
-    if (updateError) throw updateError
-
-    return NextResponse.json({ id: meetup.id, shareToken: meetup.share_token, midpoint }, { status: 201 })
+    return NextResponse.json({ id: meetup.id, shareToken: meetup.share_token }, { status: 201 })
 
   } catch (error) {
     console.error('Error creating meetup:', error)

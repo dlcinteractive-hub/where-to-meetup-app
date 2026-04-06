@@ -2,105 +2,56 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MapPin, Plus, X } from 'lucide-react'
-
-interface Location {
-  name: string
-  address: string
-  lat?: number
-  lng?: number
-}
+import { MapPin } from 'lucide-react'
 
 export default function HomePage() {
   const [title, setTitle] = useState('')
   const [creatorName, setCreatorName] = useState('')
-  const [locations, setLocations] = useState<Location[]>([
-    { name: '', address: '' },
-    { name: '', address: '' }
-  ])
+  const [name, setName] = useState('')
+  const [address, setAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const addLocation = () => {
-    setLocations([...locations, { name: '', address: '' }])
-  }
-
-  const removeLocation = (index: number) => {
-    if (locations.length > 2) {
-      setLocations(locations.filter((_, i) => i !== index))
-    }
-  }
-
-  const updateLocation = (index: number, field: 'name' | 'address', value: string) => {
-    const updated = locations.map((loc, i) => 
-      i === index ? { ...loc, [field]: value } : loc
-    )
-    setLocations(updated)
-  }
-
-  const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
+  const geocodeAddress = async (addr: string): Promise<{ lat: number; lng: number } | null> => {
     try {
       const response = await fetch('/api/geocode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address })
+        body: JSON.stringify({ address: addr }),
       })
       if (!response.ok) return null
       return await response.json()
-    } catch (error) {
-      console.error('Geocoding error:', error)
+    } catch {
       return null
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!address.trim()) return
     setLoading(true)
 
     try {
-      // Geocode all addresses
-      const geocodedLocations = await Promise.all(
-        locations.map(async (loc) => {
-          if (!loc.address.trim()) return null
-          
-          const coords = await geocodeAddress(loc.address)
-          if (!coords) return null
-
-          return {
-            name: loc.name || loc.address,
-            address: loc.address,
-            lat: coords.lat,
-            lng: coords.lng
-          }
-        })
-      )
-
-      const validLocations = geocodedLocations.filter(Boolean)
-
-      if (validLocations.length < 2) {
-        alert('Please provide at least 2 valid addresses')
+      const coords = await geocodeAddress(address)
+      if (!coords) {
+        alert('Could not find that address. Please try again.')
         setLoading(false)
         return
       }
 
-      // Create meetup
       const response = await fetch('/api/meetups', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title || 'Meetup',
           creatorName: creatorName || 'Anonymous',
-          locations: validLocations
-        })
+          locations: [{ name: name || address, address, lat: coords.lat, lng: coords.lng }],
+        }),
       })
 
       if (!response.ok) throw new Error('Failed to create meetup')
-
       const result = await response.json()
       router.push(`/meetup/${result.shareToken}`)
-
     } catch (error) {
       console.error('Error creating meetup:', error)
       alert('Failed to create meetup. Please try again.')
@@ -112,11 +63,9 @@ export default function HomePage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Plan the Perfect Meetup
-        </h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">Plan the Perfect Meetup</h2>
         <p className="text-lg text-gray-600">
-          Add everyone's locations and we'll find the best place to meet
+          Enter your starting location, share the link — everyone else adds theirs
         </p>
       </div>
 
@@ -149,57 +98,34 @@ export default function HomePage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-4">
-            📍 Starting Locations
+            <MapPin size={16} className="inline mr-1" />
+            Your Starting Location
           </label>
-          <div className="space-y-4">
-            {locations.map((location, index) => (
-              <div key={index} className="flex gap-3 items-start">
-                <div className="flex-1 space-y-2">
-                  <input
-                    type="text"
-                    value={location.name}
-                    onChange={(e) => updateLocation(index, 'name', e.target.value)}
-                    placeholder={`Person ${index + 1} name (optional)`}
-                    className="input-field w-full"
-                  />
-                  <input
-                    type="text"
-                    value={location.address}
-                    onChange={(e) => updateLocation(index, 'address', e.target.value)}
-                    placeholder="Address, city, or landmark"
-                    className="input-field w-full"
-                    required
-                  />
-                </div>
-                {locations.length > 2 && (
-                  <button
-                    type="button"
-                    onClick={() => removeLocation(index)}
-                    className="mt-1 p-2 text-red-500 hover:bg-red-50 rounded"
-                  >
-                    <X size={20} />
-                  </button>
-                )}
-              </div>
-            ))}
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name for this location (optional)"
+              className="input-field w-full"
+            />
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Address, city, or landmark"
+              className="input-field w-full"
+              required
+            />
           </div>
-
-          <button
-            type="button"
-            onClick={addLocation}
-            className="mt-4 flex items-center gap-2 text-primary-600 hover:text-primary-700"
-          >
-            <Plus size={20} />
-            Add another location
-          </button>
         </div>
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !address.trim()}
           className="btn-primary w-full py-3 text-lg font-medium disabled:opacity-50"
         >
-          {loading ? 'Finding the perfect spot...' : '🎯 Find Meeting Spots'}
+          {loading ? 'Creating meetup…' : '🎯 Create Meetup & Share'}
         </button>
       </form>
     </div>

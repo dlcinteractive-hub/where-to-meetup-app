@@ -4,10 +4,10 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 2 — Invitee Experience (in progress) |
-| **Last Verified Good State** | Phase 1 complete. Clean build, 9 routes. Voting, share link, venue persistence all wired. |
-| **Open Issues** | Rotate Google Maps + Supabase keys. Rename NEXT_PUBLIC_GOOGLE_MAPS_API_KEY → GOOGLE_MAPS_API_KEY in Vercel dashboard. |
-| **Version** | 0.1.1 |
+| **Current Phase** | Phase 2 — Invitee Experience (complete) |
+| **Last Verified Good State** | Phase 2 complete. Invitee location flow, Realtime subscriptions, auto venue trigger. 90eaaa73 chore: create CODEBASE.md |
+| **Open Issues** | Run Realtime SQL in Supabase dashboard before testing. Rotate Google Maps + Supabase keys. Rename NEXT_PUBLIC_GOOGLE_MAPS_API_KEY → GOOGLE_MAPS_API_KEY in Vercel dashboard. |
+| **Version** | 0.1.2 |
 | **Branch** | main |
 
 **Before starting any Claude Code session:** Read this block + the current phase section below. Do not proceed if Open Issues lists an unresolved blocker.
