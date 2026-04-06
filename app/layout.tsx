@@ -1,5 +1,6 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { version } from '../package.json'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -30,6 +31,9 @@ export default function RootLayout({
           <main className="max-w-4xl mx-auto px-4 py-8">
             {children}
           </main>
+          <footer className="max-w-4xl mx-auto px-4 py-4 text-center">
+            <p className="text-xs text-gray-400">v{version}</p>
+          </footer>
         </div>
       </body>
     </html>
