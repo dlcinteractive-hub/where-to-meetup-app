@@ -15,6 +15,12 @@ interface Props {
   required?: boolean
 }
 
+interface DropdownPos {
+  top: number
+  left: number
+  width: number
+}
+
 export default function AddressAutocomplete({
   value,
   onChange,
@@ -25,7 +31,14 @@ export default function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<Prediction[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [dropdownPos, setDropdownPos] = useState<DropdownPos>({ top: 0, left: 0, width: 0 })
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const calcPos = () => {
+    if (!inputRef.current) return
+    const rect = inputRef.current.getBoundingClientRect()
+    setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width })
+  }
 
   // Debounced fetch — fires 300ms after value changes, min 3 chars
   useEffect(() => {
@@ -41,7 +54,10 @@ export default function AddressAutocomplete({
         const data = await res.json()
         const preds: Prediction[] = data.predictions ?? []
         setSuggestions(preds)
-        setShowDropdown(preds.length > 0)
+        if (preds.length > 0) {
+          calcPos()
+          setShowDropdown(true)
+        }
         setActiveIndex(-1)
       } catch {
         // silently fail — user can still type and submit manually
@@ -75,13 +91,16 @@ export default function AddressAutocomplete({
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <>
       <input
+        ref={inputRef}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
+        onFocus={() => {
+          if (suggestions.length > 0) { calcPos(); setShowDropdown(true) }
+        }}
         onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
         placeholder={placeholder}
         className={className}
@@ -89,7 +108,10 @@ export default function AddressAutocomplete({
         autoComplete="off"
       />
       {showDropdown && suggestions.length > 0 && (
-        <ul className="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+        <ul
+          style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, zIndex: 9999 }}
+          className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+        >
           {suggestions.map((s, i) => (
             <li
               key={s.place_id}
@@ -105,6 +127,6 @@ export default function AddressAutocomplete({
           ))}
         </ul>
       )}
-    </div>
+    </>
   )
 }
