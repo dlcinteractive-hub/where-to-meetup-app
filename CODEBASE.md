@@ -85,3 +85,11 @@ See plan below — awaiting Claude Code proposal before any code is written.
 
 ## Phase 3 — Filters, Preferences & Polish
 Not yet started.
+
+**Known improvement — autocomplete location bias:**
+Currently defaults to LA (34.0522, -118.2437) when geolocation is unavailable.
+Better approach: pass the meetup's midpoint_lat/midpoint_lng (or organizer's
+location from the locations table) as the bias when an invitee opens a shared
+link. The meetupId is available on the meetup page — fetch the organizer's
+coordinates from /api/meetups and pass them as props to AddressAutocomplete.
+This makes the app work correctly for any city without code changes.
