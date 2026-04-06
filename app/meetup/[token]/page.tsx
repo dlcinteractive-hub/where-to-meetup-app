@@ -74,7 +74,7 @@ export default function MeetupPage() {
   const searchVenues = async (lat: number, lng: number) => {
     setLoadingVenues(true)
     try {
-      const response = await fetch('/api/venues/search', {
+      const response = await fetch('/api/venues', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ export default function MeetupPage() {
 
   const getVenueImage = (photoReference?: string): string | undefined => {
     if (!photoReference) return undefined
-    return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+    return `/api/photos?ref=${encodeURIComponent(photoReference)}`
   }
 
   if (loading) {

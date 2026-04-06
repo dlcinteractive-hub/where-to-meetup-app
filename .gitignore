@@ -1,1 +1,3 @@
 .vercel
+setup-env.txt
+.env*.local
