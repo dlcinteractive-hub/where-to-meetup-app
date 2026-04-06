@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MapPin } from 'lucide-react'
+import AddressAutocomplete from './components/ui/AddressAutocomplete'
 
 export default function HomePage() {
   const [title, setTitle] = useState('')
@@ -109,10 +110,9 @@ export default function HomePage() {
               placeholder="Your name for this location (optional)"
               className="input-field w-full"
             />
-            <input
-              type="text"
+            <AddressAutocomplete
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={setAddress}
               placeholder="Address, city, or landmark"
               className="input-field w-full"
               required

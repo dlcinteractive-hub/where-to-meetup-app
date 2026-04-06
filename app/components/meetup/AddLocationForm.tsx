@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { MapPin } from 'lucide-react'
+import AddressAutocomplete from '../ui/AddressAutocomplete'
 
 interface Props {
   meetupId: string
@@ -71,10 +72,9 @@ export default function AddLocationForm({ meetupId, onSubmitted }: Props) {
           placeholder="Your name (optional)"
           className="input-field w-full"
         />
-        <input
-          type="text"
+        <AddressAutocomplete
           value={address}
-          onChange={(e) => setAddress(e.target.value)}
+          onChange={setAddress}
           placeholder="Your address, city, or landmark"
           className="input-field w-full"
           required
