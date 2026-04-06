@@ -13,6 +13,8 @@ interface Props {
   placeholder?: string
   className?: string
   required?: boolean
+  lat?: number
+  lng?: number
 }
 
 interface DropdownPos {
@@ -27,12 +29,25 @@ export default function AddressAutocomplete({
   placeholder,
   className,
   required,
+  lat: propLat,
+  lng: propLng,
 }: Props) {
   const [suggestions, setSuggestions] = useState<Prediction[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const [dropdownPos, setDropdownPos] = useState<DropdownPos>({ top: 0, left: 0, width: 0 })
+  const [geoLat, setGeoLat] = useState<number | null>(null)
+  const [geoLng, setGeoLng] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Attempt geolocation on mount — gracefully ignored if denied or unavailable
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setGeoLat(pos.coords.latitude); setGeoLng(pos.coords.longitude) },
+      () => {} // denied or unavailable — no-op
+    )
+  }, [])
 
   const calcPos = () => {
     if (!inputRef.current) return
@@ -49,7 +64,12 @@ export default function AddressAutocomplete({
     }
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(value)}`)
+        const biasLat = propLat ?? geoLat
+        const biasLng = propLng ?? geoLng
+        const bias = biasLat != null && biasLng != null
+          ? `&lat=${biasLat}&lng=${biasLng}`
+          : ''
+        const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(value)}${bias}`)
         if (!res.ok) return
         const data = await res.json()
         const preds: Prediction[] = data.predictions ?? []
@@ -64,7 +84,7 @@ export default function AddressAutocomplete({
       }
     }, 300)
     return () => clearTimeout(timer)
-  }, [value])
+  }, [value, propLat, propLng, geoLat, geoLng])
 
   const handleSelect = (description: string) => {
     onChange(description)

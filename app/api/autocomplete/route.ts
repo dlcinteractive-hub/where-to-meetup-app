@@ -14,9 +14,13 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    const lat = searchParams.get('lat')
+    const lng = searchParams.get('lng')
+    const bias = lat && lng ? `&location=${lat},${lng}&radius=50000` : ''
+
     const url =
       `https://maps.googleapis.com/maps/api/place/autocomplete/json` +
-      `?input=${encodeURIComponent(input)}&types=geocode&key=${apiKey}`
+      `?input=${encodeURIComponent(input)}&types=geocode${bias}&key=${apiKey}`
 
     const response = await fetch(url)
     const data = await response.json()
