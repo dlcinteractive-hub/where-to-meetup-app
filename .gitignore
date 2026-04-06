@@ -1,3 +1,13 @@
 .vercel
 setup-env.txt
 .env*.local
+
+# Build output
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
