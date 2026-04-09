@@ -4,6 +4,7 @@ import { MapPin, Star, Clock, DollarSign, Check } from 'lucide-react'
 import { Venue } from '../../lib/types'
 
 interface Props {
+  id?: string
   venue: Venue
   voteCount: number
   isVoted: boolean
@@ -21,9 +22,9 @@ function renderPriceLevel(level?: number): string | null {
   return '$'.repeat(level)
 }
 
-export default function VenueCard({ venue, voteCount, isVoted, votedVenueId, onVote }: Props) {
+export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId, onVote }: Props) {
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div id={id} className="bg-white rounded-lg shadow overflow-hidden">
       {venue.photo_reference && (
         <img
           src={getVenueImage(venue.photo_reference)}

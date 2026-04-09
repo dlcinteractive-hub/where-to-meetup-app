@@ -14,18 +14,28 @@ const loader = new Loader({
   version: 'weekly',
 })
 
+function priceLabel(level?: number): string {
+  return level ? '$'.repeat(level) : ''
+}
+
+function infoContent(v: Venue): string {
+  const rating = v.rating ? `<span>⭐ ${v.rating}</span>` : ''
+  const price = v.price_level ? `<span>${priceLabel(v.price_level)}</span>` : ''
+  const sep = rating && price ? ' · ' : ''
+  return `<div style="font-size:13px"><strong>${v.name}</strong><br/>${rating}${sep}${price}</div>`
+}
+
 export default function MeetupMap({ locations, venues }: Props) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<google.maps.Map | null>(null)
   const markersRef = useRef<google.maps.Marker[]>([])
+  const infoRef = useRef<google.maps.InfoWindow | null>(null)
   const [ready, setReady] = useState(false)
 
-  // Load the Maps library once
   useEffect(() => {
     loader.importLibrary('maps').then(() => setReady(true)).catch(() => {})
   }, [])
 
-  // Initialize map + update markers when data or ready state changes
   useEffect(() => {
     if (!ready || !mapRef.current) return
 
@@ -38,7 +48,12 @@ export default function MeetupMap({ locations, venues }: Props) {
       })
     }
 
+    if (!infoRef.current) {
+      infoRef.current = new google.maps.InfoWindow()
+    }
+
     const map = mapInstance.current
+    const info = infoRef.current
 
     // Clear existing markers
     markersRef.current.forEach(m => m.setMap(null))
@@ -66,7 +81,7 @@ export default function MeetupMap({ locations, venues }: Props) {
       markersRef.current.push(marker)
     })
 
-    // Red pins — venues
+    // Red pins — venues (with hover + click)
     venues.forEach(v => {
       const pos = { lat: Number(v.lat), lng: Number(v.lng) }
       bounds.extend(pos)
@@ -83,6 +98,21 @@ export default function MeetupMap({ locations, venues }: Props) {
           strokeWeight: 2,
         },
       })
+
+      marker.addListener('mouseover', () => {
+        info.setContent(infoContent(v))
+        info.open(map, marker)
+      })
+
+      marker.addListener('mouseout', () => {
+        info.close()
+      })
+
+      marker.addListener('click', () => {
+        const el = document.getElementById(`venue-${v.place_id}`)
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      })
+
       markersRef.current.push(marker)
     })
 

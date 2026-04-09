@@ -216,6 +216,7 @@ export default function MeetupPage() {
               {venues.map((venue) => (
                 <VenueCard
                   key={venue.place_id}
+                  id={`venue-${venue.place_id}`}
                   venue={venue}
                   voteCount={venue.id ? (voteCounts[venue.id] ?? 0) : 0}
                   isVoted={votedVenueId === venue.id}
