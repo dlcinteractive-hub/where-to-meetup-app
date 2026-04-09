@@ -19,10 +19,13 @@ function priceLabel(level?: number): string {
 }
 
 function infoContent(v: Venue): string {
+  const photo = v.photo_reference
+    ? `<img src="/api/photos?ref=${encodeURIComponent(v.photo_reference)}" style="width:200px;height:auto;margin-bottom:6px;border-radius:4px" />`
+    : ''
   const rating = v.rating ? `<span>⭐ ${v.rating}</span>` : ''
   const price = v.price_level ? `<span>${priceLabel(v.price_level)}</span>` : ''
   const sep = rating && price ? ' · ' : ''
-  return `<div style="font-size:13px"><strong>${v.name}</strong><br/>${rating}${sep}${price}</div>`
+  return `<div style="font-size:13px">${photo}<strong>${v.name}</strong><br/>${rating}${sep}${price}</div>`
 }
 
 export default function MeetupMap({ locations, venues }: Props) {
@@ -110,7 +113,10 @@ export default function MeetupMap({ locations, venues }: Props) {
 
       marker.addListener('click', () => {
         const el = document.getElementById(`venue-${v.place_id}`)
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.scrollY - 20
+          window.scrollTo({ top, behavior: 'smooth' })
+        }
       })
 
       markersRef.current.push(marker)
