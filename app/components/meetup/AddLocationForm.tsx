@@ -59,8 +59,8 @@ export default function AddLocationForm({ meetupId, onSubmitted }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <div className="card">
+      <h3 className="font-heading font-semibold text-brand-dark mb-4 flex items-center gap-2">
         <MapPin size={18} />
         Add Your Starting Location
       </h3>
@@ -70,20 +70,20 @@ export default function AddLocationForm({ meetupId, onSubmitted }: Props) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name (optional)"
-          className="input-field w-full"
+          className="input-field"
         />
         <AddressAutocomplete
           value={address}
           onChange={setAddress}
           placeholder="Your address, city, or landmark"
-          className="input-field w-full"
+          className="input-field"
           required
         />
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-primary-600">{error}</p>}
         <button
           type="submit"
           disabled={loading || !address.trim()}
-          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="btn-primary w-full"
         >
           {loading ? 'Adding your location…' : "I'm joining from here"}
         </button>

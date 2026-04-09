@@ -68,15 +68,20 @@ export default function HomePage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Plan the Perfect Meetup</h2>
-        <p className="text-lg text-gray-600">
+        <h2 className="font-heading text-4xl font-bold mb-4 text-brand-medium">
+          Find the{' '}
+          <span className="bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
+            perfect meeting spot
+          </span>
+        </h2>
+        <p className="text-lg text-brand-muted">
           Enter your starting location, share the link — everyone else adds theirs
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-lg shadow p-6">
+      <form onSubmit={handleSubmit} className="card space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-brand-dark mb-2">
             Meetup Title (optional)
           </label>
           <input
@@ -84,12 +89,12 @@ export default function HomePage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Weekend lunch, Team meetup, etc."
-            className="input-field w-full"
+            className="input-field"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-brand-dark mb-2">
             Your Name (optional)
           </label>
           <input
@@ -97,12 +102,12 @@ export default function HomePage() {
             value={creatorName}
             onChange={(e) => setCreatorName(e.target.value)}
             placeholder="Who's organizing this?"
-            className="input-field w-full"
+            className="input-field"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">
+          <label className="block text-sm font-medium text-brand-dark mb-4">
             <MapPin size={16} className="inline mr-1" />
             Your Starting Location
           </label>
@@ -112,13 +117,13 @@ export default function HomePage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name for this location (optional)"
-              className="input-field w-full"
+              className="input-field"
             />
             <AddressAutocomplete
               value={address}
               onChange={setAddress}
               placeholder="Address, city, or landmark"
-              className="input-field w-full"
+              className="input-field"
               required
             />
           </div>
@@ -127,7 +132,7 @@ export default function HomePage() {
         <button
           type="submit"
           disabled={loading || !address.trim()}
-          className="btn-primary w-full py-3 text-lg font-medium disabled:opacity-50"
+          className="btn-primary w-full py-3 text-lg"
         >
           {loading ? 'Creating meetup…' : '🎯 Create Meetup & Share'}
         </button>

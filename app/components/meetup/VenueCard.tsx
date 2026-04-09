@@ -24,7 +24,7 @@ function renderPriceLevel(level?: number): string | null {
 
 export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId, onVote }: Props) {
   return (
-    <div id={id} className="bg-white rounded-lg shadow overflow-hidden">
+    <div id={id} className="bg-white rounded-2xl shadow-sm border border-brand-border overflow-hidden">
       {venue.photo_reference && (
         <img
           src={getVenueImage(venue.photo_reference)}
@@ -34,8 +34,8 @@ export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId,
       )}
       <div className="p-4 space-y-3">
         <div>
-          <h3 className="font-bold text-lg text-gray-900">{venue.name}</h3>
-          <p className="text-sm text-gray-600 flex items-start gap-1">
+          <h3 className="font-heading font-bold text-lg text-brand-dark">{venue.name}</h3>
+          <p className="text-sm text-brand-muted flex items-start gap-1">
             <MapPin size={14} className="mt-0.5 shrink-0" />
             {venue.address}
           </p>
@@ -44,23 +44,23 @@ export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId,
         <div className="flex items-center gap-4 text-sm">
           {venue.rating && (
             <div className="flex items-center gap-1">
-              <Star size={14} className="text-yellow-500 fill-current" />
-              <span className="font-medium">{venue.rating}</span>
+              <Star size={14} className="text-accent-500 fill-current" />
+              <span className="font-medium text-brand-dark">{venue.rating}</span>
             </div>
           )}
           {venue.price_level && (
             <div className="flex items-center gap-1">
-              <DollarSign size={14} className="text-green-600" />
-              <span>{renderPriceLevel(venue.price_level)}</span>
+              <DollarSign size={14} className="text-accent-500" />
+              <span className="text-brand-dark">{renderPriceLevel(venue.price_level)}</span>
             </div>
           )}
           {venue.opening_hours?.open_now !== undefined && (
             <div className="flex items-center gap-1">
               <Clock
                 size={14}
-                className={venue.opening_hours.open_now ? 'text-green-600' : 'text-red-600'}
+                className={venue.opening_hours.open_now ? 'text-primary-500' : 'text-brand-muted'}
               />
-              <span className={venue.opening_hours.open_now ? 'text-green-600' : 'text-red-600'}>
+              <span className={venue.opening_hours.open_now ? 'text-primary-500' : 'text-brand-muted'}>
                 {venue.opening_hours.open_now ? 'Open' : 'Closed'}
               </span>
             </div>
@@ -70,7 +70,7 @@ export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId,
         {venue.types && venue.types.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {venue.types.slice(0, 3).map((type) => (
-              <span key={type} className="text-xs bg-gray-100 px-2 py-1 rounded">
+              <span key={type} className="text-xs bg-brand-light text-brand-medium px-2 py-1 rounded-lg">
                 {type.replace(/_/g, ' ')}
               </span>
             ))}
@@ -82,26 +82,26 @@ export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId,
             href={`https://maps.google.com/?q=${encodeURIComponent(venue.name + ' ' + venue.address)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 text-center py-2 px-3 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="btn-secondary flex-1 text-center text-sm"
           >
             Directions
           </a>
           <button
             onClick={() => onVote(venue)}
             disabled={!!votedVenueId}
-            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
               isVoted
-                ? 'bg-green-600 text-white cursor-default'
+                ? 'bg-primary-500 text-white cursor-default'
                 : votedVenueId
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                ? 'bg-brand-light text-brand-muted cursor-not-allowed'
+                : 'bg-primary-500 text-white hover:bg-primary-600'
             }`}
           >
             {isVoted ? <><Check size={14} /> Voted</> : 'Vote'}
             {voteCount > 0 && (
               <span
                 className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  isVoted ? 'bg-green-700' : 'bg-indigo-700'
+                  isVoted ? 'bg-primary-700' : 'bg-primary-700'
                 }`}
               >
                 {voteCount}

@@ -4,10 +4,10 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 3 — Filters, Preferences & Polish (not yet started) |
-| **Last Verified Good State** | Phase 2 complete + organizer location removal. eb4d57f7 chore: document autocomplete bias improvement |
-| **Open Issues** | Rotate Google Maps + Supabase keys. Organizer remove unavailable on different device (no auth — by design, documented). |
-| **Version** | 0.1.3 |
+| **Current Phase** | Phase 3 — Filters, Preferences & Polish (in progress) |
+| **Last Verified Good State** | Midpoint rebrand applied. 72cb7cf1 fix: clean venue tooltip, no photo |
+| **Open Issues** | Rotate Google Maps + Supabase keys. |
+| **Version** | 0.1.4 |
 | **Branch** | main |
 
 **Before starting any Claude Code session:** Read this block + the current phase section below. Do not proceed if Open Issues lists an unresolved blocker.
