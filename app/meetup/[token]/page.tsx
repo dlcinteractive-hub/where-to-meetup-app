@@ -19,7 +19,7 @@ export default function MeetupPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
-  const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [hasSubmitted, setHasSubmitted] = useState<boolean | null>(null)
   const [adminToken, setAdminToken] = useState<string | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
 
@@ -186,8 +186,9 @@ export default function MeetupPage() {
         </div>
       </div>
 
-      {/* Add location form — shown to anyone who hasn't submitted yet */}
-      {!hasSubmitted && (
+      {/* Add location form — shown to anyone who hasn't submitted yet.
+          hasSubmitted=null means localStorage hasn't been read yet; don't render. */}
+      {hasSubmitted === false && (
         <AddLocationForm meetupId={meetup.id} onSubmitted={handleLocationSubmitted} />
       )}
 
