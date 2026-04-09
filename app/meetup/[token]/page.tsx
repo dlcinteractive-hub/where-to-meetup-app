@@ -7,6 +7,7 @@ import { Venue, Location, Meetup } from '../../lib/types'
 import { supabase } from '../../lib/supabase-client'
 import AddLocationForm from '../../components/meetup/AddLocationForm'
 import VenueCard from '../../components/meetup/VenueCard'
+import MeetupMap from '../../components/meetup/MeetupMap'
 
 export default function MeetupPage() {
   const params = useParams()
@@ -201,9 +202,10 @@ export default function MeetupPage() {
         </div>
       )}
 
-      {/* Venues — only once status is voting */}
+      {/* Map + Venues — only once status is voting */}
       {meetup.status === 'voting' && (
-        <div>
+        <div className="space-y-6">
+          <MeetupMap locations={meetup.locations ?? []} venues={venues} />
           <h2 className="text-xl font-bold text-gray-900 mb-4">🎯 Suggested Meeting Spots</h2>
           {venues.length === 0 ? (
             <div className="text-center py-8 bg-white rounded-lg shadow">
