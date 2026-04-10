@@ -22,6 +22,7 @@ export default function MeetupPage() {
   const [hasSubmitted, setHasSubmitted] = useState<boolean | null>(null)
   const [adminToken, setAdminToken] = useState<string | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const [priceLevels, setPriceLevels] = useState<Set<number>>(new Set([1, 2, 3, 4]))
 
   const fetchMeetup = useCallback(async () => {
     try {
@@ -189,31 +190,61 @@ export default function MeetupPage() {
       )}
 
       {/* Map + Venues — only once status is voting */}
-      {meetup.status === 'voting' && (
-        <div className="space-y-6">
-          <MeetupMap locations={meetup.locations ?? []} venues={venues} />
-          <h2 className="text-xl font-bold text-gray-900 mb-4">🎯 Suggested Meeting Spots</h2>
-          {venues.length === 0 ? (
-            <div className="text-center py-8 bg-white rounded-lg shadow">
-              <p className="text-gray-600">Finding venues near the midpoint…</p>
+      {meetup.status === 'voting' && (() => {
+        const filtered = venues.filter(v => !v.price_level || priceLevels.has(v.price_level))
+        return (
+          <div className="space-y-6">
+            <MeetupMap locations={meetup.locations ?? []} venues={filtered} />
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <h2 className="text-xl font-bold text-gray-900">🎯 Suggested Meeting Spots</h2>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4].map(level => {
+                  const active = priceLevels.has(level)
+                  return (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => setPriceLevels(prev => {
+                        const next = new Set(prev)
+                        if (next.has(level)) next.delete(level); else next.add(level)
+                        return next
+                      })}
+                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                        active
+                          ? 'bg-primary-500 text-white'
+                          : 'bg-white text-brand-muted border border-brand-border'
+                      }`}
+                    >
+                      {'$'.repeat(level)}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {venues.map((venue) => (
-                <VenueCard
-                  key={venue.place_id}
-                  id={`venue-${venue.place_id}`}
-                  venue={venue}
-                  voteCount={venue.id ? (voteCounts[venue.id] ?? 0) : 0}
-                  isVoted={votedVenueId === venue.id}
-                  votedVenueId={votedVenueId}
-                  onVote={handleVote}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+            {filtered.length === 0 ? (
+              <div className="text-center py-8 bg-white rounded-lg shadow">
+                <p className="text-gray-600">
+                  {venues.length === 0 ? 'Finding venues near the midpoint…' : 'No venues match the selected price filters.'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {filtered.map((venue) => (
+                  <VenueCard
+                    key={venue.place_id}
+                    id={`venue-${venue.place_id}`}
+                    venue={venue}
+                    voteCount={venue.id ? (voteCounts[venue.id] ?? 0) : 0}
+                    isVoted={votedVenueId === venue.id}
+                    votedVenueId={votedVenueId}
+                    onVote={handleVote}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })()}
     </div>
   )
 }

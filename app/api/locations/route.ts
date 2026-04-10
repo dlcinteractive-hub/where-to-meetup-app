@@ -43,8 +43,12 @@ export async function POST(req: NextRequest) {
 
       if (updateError) throw updateError
 
-      // Fetch + save new venues — Realtime notifies all open tabs on INSERT
-      await fetchAndSaveVenues(midpoint.lat, midpoint.lng, meetupId)
+      // Read venue_types from meetup for category-aware search
+      const { data: meetup } = await supabaseAdmin
+        .from('meetups').select('venue_types').eq('id', meetupId).single()
+      const types = meetup?.venue_types ?? ['restaurant']
+
+      await fetchAndSaveVenues(midpoint.lat, midpoint.lng, meetupId, { types })
     }
 
     return NextResponse.json({ success: true })
@@ -124,7 +128,9 @@ export async function DELETE(req: NextRequest) {
         .from('meetups')
         .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng, status: 'voting' })
         .eq('id', meetup.id)
-      await fetchAndSaveVenues(midpoint.lat, midpoint.lng, meetup.id)
+      const { data: meetupData } = await supabaseAdmin
+        .from('meetups').select('venue_types').eq('id', meetup.id).single()
+      await fetchAndSaveVenues(midpoint.lat, midpoint.lng, meetup.id, { types: meetupData?.venue_types ?? ['restaurant'] })
     } else {
       // Back to planning — 1 location left
       await supabaseAdmin

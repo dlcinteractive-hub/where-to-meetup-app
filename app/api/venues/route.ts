@@ -4,7 +4,7 @@ import { fetchAndSaveVenues } from '../../lib/venues'
 
 export async function POST(req: NextRequest) {
   try {
-    const { lat, lng, radius = 5000, type = 'restaurant', meetupId } = await req.json()
+    const { lat, lng, radius = 5000, types, meetupId } = await req.json()
 
     if (!lat || !lng) {
       return NextResponse.json({ error: 'lat and lng are required' }, { status: 400 })
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch from Places API and persist
-    const venues = await fetchAndSaveVenues(lat, lng, meetupId, { radius, type })
+    const venues = await fetchAndSaveVenues(lat, lng, meetupId, { radius, types: types ?? ['restaurant'] })
     return NextResponse.json({ venues })
 
   } catch (error) {

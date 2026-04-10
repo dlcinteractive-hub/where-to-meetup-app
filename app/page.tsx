@@ -10,6 +10,7 @@ export default function HomePage() {
   const [creatorName, setCreatorName] = useState('')
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -47,6 +48,7 @@ export default function HomePage() {
           title: title || 'Meetup',
           creatorName: creatorName || 'Anonymous',
           locations: [{ name: name || address, address, lat: coords.lat, lng: coords.lng }],
+          venueTypes: selectedTypes.length > 0 ? selectedTypes : ['restaurant'],
         }),
       })
 
@@ -127,6 +129,40 @@ export default function HomePage() {
               className="input-field"
               required
             />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-brand-dark mb-3">
+            What are you looking for?
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: '🍽️ Restaurant', value: 'restaurant' },
+              { label: '☕ Coffee', value: 'cafe' },
+              { label: '🍺 Bar', value: 'bar' },
+              { label: '🌳 Park', value: 'park' },
+            ].map(({ label, value }) => {
+              const selected = selectedTypes.includes(value)
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() =>
+                    setSelectedTypes(prev =>
+                      selected ? prev.filter(t => t !== value) : [...prev, value]
+                    )
+                  }
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                    selected
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-white text-brand-dark border border-brand-border hover:bg-brand-light'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import { calculateOptimalMidpoint } from '../../lib/midpoint'
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, creatorName, locations } = await req.json()
+    const { title, creatorName, locations, venueTypes } = await req.json()
 
     if (!locations || locations.length < 1) {
       return NextResponse.json({ error: 'At least 1 location is required' }, { status: 400 })
@@ -12,7 +12,11 @@ export async function POST(req: NextRequest) {
 
     const { data: meetup, error: meetupError } = await supabaseAdmin
       .from('meetups')
-      .insert({ title: title || 'Meetup', creator_name: creatorName || 'Anonymous' })
+      .insert({
+        title: title || 'Meetup',
+        creator_name: creatorName || 'Anonymous',
+        venue_types: venueTypes && venueTypes.length > 0 ? venueTypes : ['restaurant'],
+      })
       .select()
       .single()
 
@@ -66,7 +70,7 @@ export async function GET(req: NextRequest) {
 
     const { data: meetup, error } = await supabaseAdmin
       .from('meetups')
-      .select('id, title, creator_name, share_token, status, midpoint_lat, midpoint_lng, selected_venue_data, created_at, updated_at, locations(*), venues(*)')
+      .select('id, title, creator_name, share_token, status, venue_types, midpoint_lat, midpoint_lng, selected_venue_data, created_at, updated_at, locations(*), venues(*)')
       .eq('share_token', token)
       .single()
 

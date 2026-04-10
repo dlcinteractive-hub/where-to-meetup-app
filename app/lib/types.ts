@@ -15,6 +15,7 @@ export interface Meetup {
   status: 'planning' | 'voting' | 'decided'
   midpoint_lat: number | null
   midpoint_lng: number | null
+  venue_types?: string[]
   selected_venue_data: Venue | null
   created_at: string
   updated_at: string
