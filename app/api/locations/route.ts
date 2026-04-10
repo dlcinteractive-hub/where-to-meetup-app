@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../lib/supabase-server'
 import { calculateOptimalMidpoint } from '../../lib/midpoint'
 import { fetchAndSaveVenues } from '../../lib/venues'
+import { VOTING_DURATION_MS } from '../../lib/constants'
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,10 +36,11 @@ export async function POST(req: NextRequest) {
       // Clear old venues — cascades to votes (intentional: venues reset when group changes)
       await supabaseAdmin.from('venues').delete().eq('meetup_id', meetupId)
 
-      // Update meetup: new midpoint + promote to voting
+      // Update meetup: new midpoint + promote to voting + set timer
+      const votingEndsAt = new Date(Date.now() + VOTING_DURATION_MS).toISOString()
       const { error: updateError } = await supabaseAdmin
         .from('meetups')
-        .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng, status: 'voting' })
+        .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng, status: 'voting', voting_ends_at: votingEndsAt })
         .eq('id', meetupId)
 
       if (updateError) throw updateError
@@ -124,9 +126,10 @@ export async function DELETE(req: NextRequest) {
 
     if (remaining && remaining.length >= 2) {
       const midpoint = await calculateOptimalMidpoint(remaining as any)
+      const votingEndsAt = new Date(Date.now() + VOTING_DURATION_MS).toISOString()
       await supabaseAdmin
         .from('meetups')
-        .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng, status: 'voting' })
+        .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng, status: 'voting', voting_ends_at: votingEndsAt })
         .eq('id', meetup.id)
       const { data: meetupData } = await supabaseAdmin
         .from('meetups').select('venue_types').eq('id', meetup.id).single()

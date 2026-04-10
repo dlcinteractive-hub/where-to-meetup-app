@@ -5,9 +5,9 @@
 | Field | Value |
 |-------|-------|
 | **Current Phase** | Phase 3 — Filters, Preferences & Polish (in progress) |
-| **Last Verified Good State** | AI venue ranking working, chains excluded, voting fixed, category and price filters live. f7f152ad fix: AI ranking now excludes chains and fast food |
-| **Open Issues** | Rotate Google Maps + Supabase keys. |
-| **Version** | 0.1.5 |
+| **Last Verified Good State** | Approval voting system with timer, done button, auto-decide. 75eb2e69 chore: bump to 0.1.5, update CODEBASE.md |
+| **Open Issues** | Rotate Google Maps + Supabase keys. Change VOTING_DURATION_MS before launch (currently 1 minute). |
+| **Version** | 0.1.6 |
 | **Branch** | main |
 
 **Before starting any Claude Code session:** Read this block + the current phase section below. Do not proceed if Open Issues lists an unresolved blocker.

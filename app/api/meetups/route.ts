@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
 
     const { data: meetup, error } = await supabaseAdmin
       .from('meetups')
-      .select('id, title, creator_name, share_token, status, venue_types, midpoint_lat, midpoint_lng, selected_venue_data, created_at, updated_at, locations(*), venues(*)')
+      .select('id, title, creator_name, share_token, status, venue_types, voting_ends_at, midpoint_lat, midpoint_lng, selected_venue_data, created_at, updated_at, locations(*), venues(*)')
       .eq('share_token', token)
       .single()
 

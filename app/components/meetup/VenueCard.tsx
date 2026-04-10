@@ -6,10 +6,11 @@ import { Venue } from '../../lib/types'
 interface Props {
   id?: string
   venue: Venue
+  isSelected: boolean
+  hasSubmitted: boolean
+  isWinner: boolean
   voteCount: number
-  isVoted: boolean
-  votedVenueId: string | null
-  onVote: (venue: Venue) => void
+  onToggle: (placeId: string) => void
 }
 
 function getVenueImage(photoReference?: string): string | undefined {
@@ -22,9 +23,22 @@ function renderPriceLevel(level?: number): string | null {
   return '$'.repeat(level)
 }
 
-export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId, onVote }: Props) {
+export default function VenueCard({ id, venue, isSelected, hasSubmitted, isWinner, voteCount, onToggle }: Props) {
+  const locked = hasSubmitted
+  const borderClass = isWinner
+    ? 'border-2 border-accent-400 ring-2 ring-accent-300'
+    : isSelected
+    ? 'border-2 border-primary-500'
+    : 'border border-brand-border'
+
   return (
-    <div id={id} className="bg-white rounded-2xl shadow-sm border border-brand-border overflow-hidden">
+    <div
+      id={id}
+      onClick={() => !locked && onToggle(venue.place_id)}
+      className={`bg-white rounded-2xl shadow-sm overflow-hidden transition-all ${borderClass} ${
+        locked ? 'cursor-default' : 'cursor-pointer hover:shadow-md'
+      }`}
+    >
       {venue.photo_reference && (
         <img
           src={getVenueImage(venue.photo_reference)}
@@ -33,12 +47,26 @@ export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId,
         />
       )}
       <div className="p-4 space-y-3">
-        <div>
-          <h3 className="font-heading font-bold text-lg text-brand-dark">{venue.name}</h3>
-          <p className="text-sm text-brand-muted flex items-start gap-1">
-            <MapPin size={14} className="mt-0.5 shrink-0" />
-            {venue.address}
-          </p>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h3 className="font-heading font-bold text-lg text-brand-dark">{venue.name}</h3>
+            <p className="text-sm text-brand-muted flex items-start gap-1">
+              <MapPin size={14} className="mt-0.5 shrink-0" />
+              {venue.address}
+            </p>
+          </div>
+          {!locked && (
+            <div className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+              isSelected ? 'bg-primary-500 border-primary-500' : 'border-brand-border'
+            }`}>
+              {isSelected && <Check size={14} className="text-white" />}
+            </div>
+          )}
+          {locked && voteCount > 0 && (
+            <span className="shrink-0 bg-primary-100 text-primary-700 text-sm font-semibold px-2.5 py-0.5 rounded-full">
+              {voteCount} {voteCount === 1 ? 'vote' : 'votes'}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-4 text-sm">
@@ -56,10 +84,7 @@ export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId,
           )}
           {venue.opening_hours?.open_now !== undefined && (
             <div className="flex items-center gap-1">
-              <Clock
-                size={14}
-                className={venue.opening_hours.open_now ? 'text-primary-500' : 'text-brand-muted'}
-              />
+              <Clock size={14} className={venue.opening_hours.open_now ? 'text-primary-500' : 'text-brand-muted'} />
               <span className={venue.opening_hours.open_now ? 'text-primary-500' : 'text-brand-muted'}>
                 {venue.opening_hours.open_now ? 'Open' : 'Closed'}
               </span>
@@ -77,38 +102,16 @@ export default function VenueCard({ id, venue, voteCount, isVoted, votedVenueId,
           </div>
         )}
 
-        <div className="flex gap-2 pt-1">
+        {isWinner && (
           <a
             href={`https://maps.google.com/?q=${encodeURIComponent(venue.name + ' ' + venue.address)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-secondary flex-1 text-center text-sm"
+            className="btn-primary w-full text-center text-sm block"
           >
-            Directions
+            Get Directions
           </a>
-          <button
-            onClick={() => onVote(venue)}
-            disabled={!!votedVenueId}
-            className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-              isVoted
-                ? 'bg-primary-500 text-white cursor-default'
-                : votedVenueId
-                ? 'bg-brand-light text-brand-muted cursor-not-allowed'
-                : 'bg-primary-500 text-white hover:bg-primary-600'
-            }`}
-          >
-            {isVoted ? <><Check size={14} /> Voted</> : 'Vote'}
-            {voteCount > 0 && (
-              <span
-                className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  isVoted ? 'bg-primary-700' : 'bg-primary-700'
-                }`}
-              >
-                {voteCount}
-              </span>
-            )}
-          </button>
-        </div>
+        )}
       </div>
     </div>
   )

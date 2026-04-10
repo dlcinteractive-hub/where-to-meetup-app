@@ -16,6 +16,7 @@ export interface Meetup {
   midpoint_lat: number | null
   midpoint_lng: number | null
   venue_types?: string[]
+  voting_ends_at?: string | null
   selected_venue_data: Venue | null
   created_at: string
   updated_at: string
