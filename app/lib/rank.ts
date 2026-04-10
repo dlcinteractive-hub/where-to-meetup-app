@@ -11,6 +11,8 @@ export async function rankVenuesWithAI<T extends RankableVenue>(venues: T[]): Pr
   if (!apiKey || venues.length === 0) return venues
 
   try {
+    console.log(`AI ranking: starting with ${venues.length} venues`)
+
     const summary = venues.map(v => ({
       place_id: v.place_id,
       name: v.name,
@@ -36,12 +38,19 @@ export async function rankVenuesWithAI<T extends RankableVenue>(venues: T[]): Pr
       }),
     })
 
-    if (!res.ok) return venues
+    if (!res.ok) {
+      const body = await res.text()
+      console.error(`AI ranking: API returned ${res.status}`, body)
+      return venues
+    }
 
     const data = await res.json()
     const text: string = data.content?.[0]?.text ?? ''
     const match = text.match(/\[[\s\S]*\]/)
-    if (!match) return venues
+    if (!match) {
+      console.error('AI ranking: failed to parse response', text)
+      return venues
+    }
 
     const ranked: string[] = JSON.parse(match[0])
     const byId = new Map(venues.map(v => [v.place_id, v]))
@@ -51,8 +60,10 @@ export async function rankVenuesWithAI<T extends RankableVenue>(venues: T[]): Pr
     for (const v of venues) {
       if (!seen.has(v.place_id)) ordered.push(v)
     }
+    console.log('AI ranking: success, returning ranked order')
     return ordered
-  } catch {
+  } catch (err) {
+    console.error('AI ranking: unexpected error', err)
     return venues
   }
 }
