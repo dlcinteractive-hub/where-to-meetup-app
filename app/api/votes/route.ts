@@ -13,12 +13,12 @@ export async function POST(req: NextRequest) {
     const forwarded = req.headers.get('x-forwarded-for')
     const voterIp = forwarded ? forwarded.split(',')[0].trim() : 'unknown'
 
-    // Check if already voted for this venue
+    // Check if already voted for this venue (venueId is the Google place_id)
     const { data: existing } = await supabaseAdmin
       .from('votes')
       .select('id')
       .eq('meetup_id', meetupId)
-      .eq('venue_id', venueId)
+      .eq('venue_place_id', venueId)
       .eq('voter_ip', voterIp)
       .single()
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     // Insert vote
     const { error } = await supabaseAdmin
       .from('votes')
-      .insert({ meetup_id: meetupId, venue_id: venueId, voter_name: voterName || null, voter_ip: voterIp })
+      .insert({ meetup_id: meetupId, venue_place_id: venueId, voter_name: voterName || null, voter_ip: voterIp })
 
     if (error) throw error
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       .from('votes')
       .select('*', { count: 'exact', head: true })
       .eq('meetup_id', meetupId)
-      .eq('venue_id', venueId)
+      .eq('venue_place_id', venueId)
 
     return NextResponse.json({ success: true, voteCount: count ?? 0 })
 
@@ -49,11 +49,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  let meetupId: string | null = null
   try {
     const { searchParams } = new URL(req.url)
-    meetupId = searchParams.get('meetupId')
-    console.log('[votes GET] meetupId:', meetupId, 'url:', req.url)
+    const meetupId = searchParams.get('meetupId')
 
     if (!meetupId) {
       return NextResponse.json({ error: 'meetupId is required' }, { status: 400 })
@@ -61,34 +59,21 @@ export async function GET(req: NextRequest) {
 
     const { data: votes, error } = await supabaseAdmin
       .from('votes')
-      .select('venue_id')
+      .select('venue_place_id')
       .eq('meetup_id', meetupId)
 
-    if (error) {
-      console.error('[votes GET] supabase error:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-      })
-      throw error
-    }
+    if (error) throw error
 
-    console.log('[votes GET] success, vote count:', votes?.length ?? 0)
-
-    // Count votes per venue
+    // Count votes per venue (keyed by place_id)
     const counts: Record<string, number> = {}
     for (const vote of votes ?? []) {
-      counts[vote.venue_id] = (counts[vote.venue_id] ?? 0) + 1
+      counts[vote.venue_place_id] = (counts[vote.venue_place_id] ?? 0) + 1
     }
 
     return NextResponse.json({ counts })
 
   } catch (error) {
-    console.error('[votes GET] handler error:', {
-      meetupId,
-      message: error instanceof Error ? error.message : String(error),
-    })
+    console.error('Get votes error:', error)
     return NextResponse.json({ error: 'Failed to get votes' }, { status: 500 })
   }
 }

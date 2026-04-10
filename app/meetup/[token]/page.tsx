@@ -60,18 +60,18 @@ export default function MeetupPage() {
   }, [fetchMeetup])
 
   const handleVote = async (venue: Venue) => {
-    if (!meetup || !venue.id || votedVenueId === venue.id) return
+    if (!meetup || votedVenueId === venue.place_id) return
     try {
       const response = await fetch('/api/votes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ meetupId: meetup.id, venueId: venue.id }),
+        body: JSON.stringify({ meetupId: meetup.id, venueId: venue.place_id }),
       })
       const data = await response.json()
-      if (response.status === 409) { setVotedVenueId(venue.id); return }
+      if (response.status === 409) { setVotedVenueId(venue.place_id); return }
       if (!response.ok) throw new Error(data.error)
-      setVotedVenueId(venue.id)
-      setVoteCounts(prev => ({ ...prev, [venue.id!]: data.voteCount }))
+      setVotedVenueId(venue.place_id)
+      setVoteCounts(prev => ({ ...prev, [venue.place_id]: data.voteCount }))
     } catch {
       console.error('Vote error')
     }
@@ -234,8 +234,8 @@ export default function MeetupPage() {
                     key={venue.place_id}
                     id={`venue-${venue.place_id}`}
                     venue={venue}
-                    voteCount={venue.id ? (voteCounts[venue.id] ?? 0) : 0}
-                    isVoted={votedVenueId === venue.id}
+                    voteCount={voteCounts[venue.place_id] ?? 0}
+                    isVoted={votedVenueId === venue.place_id}
                     votedVenueId={votedVenueId}
                     onVote={handleVote}
                   />
