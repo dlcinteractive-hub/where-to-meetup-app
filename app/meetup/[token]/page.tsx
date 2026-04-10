@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { MapPin, Users, Share2, Check, X } from 'lucide-react'
 import { Venue, Location, Meetup } from '../../lib/types'
-import { supabase } from '../../lib/supabase-client'
 import AddLocationForm from '../../components/meetup/AddLocationForm'
 import VenueCard from '../../components/meetup/VenueCard'
 import MeetupMap from '../../components/meetup/MeetupMap'
@@ -53,24 +52,11 @@ export default function MeetupPage() {
     fetchMeetup()
   }, [token, fetchMeetup])
 
-  // Realtime: re-fetch on any location change or new venue insert
+  // Polling: re-fetch every 5s
   useEffect(() => {
-    if (!meetup?.id) return
-
-    const channel = supabase
-      .channel(`meetup-${meetup.id}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'locations',
-        filter: `meetup_id=eq.${meetup.id}`,
-      }, fetchMeetup)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'venues',
-        filter: `meetup_id=eq.${meetup.id}`,
-      }, fetchMeetup)
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [meetup?.id, fetchMeetup])
+    const interval = setInterval(fetchMeetup, 5000)
+    return () => clearInterval(interval)
+  }, [fetchMeetup])
 
   const handleVote = async (venue: Venue) => {
     if (!meetup || !venue.id || votedVenueId === venue.id) return
