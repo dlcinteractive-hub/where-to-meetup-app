@@ -5,9 +5,9 @@
 | Field | Value |
 |-------|-------|
 | **Current Phase** | Phase 3 — Filters, Preferences & Polish (in progress) |
-| **Last Verified Good State** | Midpoint rebrand applied. 72cb7cf1 fix: clean venue tooltip, no photo |
+| **Last Verified Good State** | AI venue ranking working, chains excluded, voting fixed, category and price filters live. f7f152ad fix: AI ranking now excludes chains and fast food |
 | **Open Issues** | Rotate Google Maps + Supabase keys. |
-| **Version** | 0.1.4 |
+| **Version** | 0.1.5 |
 | **Branch** | main |
 
 **Before starting any Claude Code session:** Read this block + the current phase section below. Do not proceed if Open Issues lists an unresolved blocker.
