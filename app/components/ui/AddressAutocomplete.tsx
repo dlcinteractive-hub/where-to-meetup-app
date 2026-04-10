@@ -37,6 +37,7 @@ export default function AddressAutocomplete({
   const [dropdownPos, setDropdownPos] = useState<DropdownPos>({ top: 0, left: 0, width: 0 })
   const inputRef = useRef<HTMLInputElement>(null)
   const coordsRef = useRef<{ lat: number; lng: number }>({ lat: LA_LAT, lng: LA_LNG })
+  const justSelectedRef = useRef(false)
 
   // Attempt geolocation on mount — fall back to LA if denied or unavailable
   useEffect(() => {
@@ -57,6 +58,10 @@ export default function AddressAutocomplete({
 
   // Debounced fetch — fires 300ms after value changes, min 3 chars
   useEffect(() => {
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false
+      return
+    }
     if (value.length < 3) {
       setSuggestions([])
       setShowDropdown(false)
@@ -85,6 +90,7 @@ export default function AddressAutocomplete({
   }, [value])
 
   const handleSelect = (description: string) => {
+    justSelectedRef.current = true
     onChange(description)
     setSuggestions([])
     setShowDropdown(false)

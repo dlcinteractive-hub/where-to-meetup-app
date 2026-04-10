@@ -140,7 +140,7 @@ export default function MeetupPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shrink-0"
           >
             {copied ? <Check size={16} className="text-green-600" /> : <Share2 size={16} />}
-            {copied ? 'Copied!' : 'Share'}
+            {copied ? 'Link copied!' : 'Invite'}
           </button>
         </div>
 

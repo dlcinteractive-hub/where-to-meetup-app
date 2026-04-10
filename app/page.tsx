@@ -52,7 +52,8 @@ export default function HomePage() {
 
       if (!response.ok) throw new Error('Failed to create meetup')
       const result = await response.json()
-      // Store admin token so organizer can remove locations on this device
+      // Store admin token and mark as submitted so organizer doesn't see the add-location form
+      localStorage.setItem(`submitted_${result.shareToken}`, 'true')
       if (result.adminToken) {
         localStorage.setItem(`admin_${result.shareToken}`, result.adminToken)
       }
