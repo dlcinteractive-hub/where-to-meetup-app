@@ -18,18 +18,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Maps API not configured' }, { status: 500 })
     }
 
-    // Return already-saved venues if they exist
-    const { data: existing } = await supabaseAdmin
-      .from('venues')
-      .select('*')
-      .eq('meetup_id', meetupId)
-      .limit(10)
+    // Delete old venues before refetching (cascades to votes — intentional)
+    await supabaseAdmin.from('venues').delete().eq('meetup_id', meetupId)
 
-    if (existing && existing.length > 0) {
-      return NextResponse.json({ venues: existing })
-    }
-
-    // Fetch from Places API and persist
+    // Always fetch fresh from Places API + AI ranking
     const venues = await fetchAndSaveVenues(lat, lng, meetupId, { radius, types: types ?? ['restaurant'] })
     return NextResponse.json({ venues })
 

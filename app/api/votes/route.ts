@@ -49,9 +49,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  let meetupId: string | null = null
   try {
     const { searchParams } = new URL(req.url)
-    const meetupId = searchParams.get('meetupId')
+    meetupId = searchParams.get('meetupId')
+    console.log('[votes GET] meetupId:', meetupId, 'url:', req.url)
 
     if (!meetupId) {
       return NextResponse.json({ error: 'meetupId is required' }, { status: 400 })
@@ -62,7 +64,17 @@ export async function GET(req: NextRequest) {
       .select('venue_id')
       .eq('meetup_id', meetupId)
 
-    if (error) throw error
+    if (error) {
+      console.error('[votes GET] supabase error:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      })
+      throw error
+    }
+
+    console.log('[votes GET] success, vote count:', votes?.length ?? 0)
 
     // Count votes per venue
     const counts: Record<string, number> = {}
@@ -73,7 +85,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ counts })
 
   } catch (error) {
-    console.error('Get votes error:', error)
+    console.error('[votes GET] handler error:', {
+      meetupId,
+      message: error instanceof Error ? error.message : String(error),
+    })
     return NextResponse.json({ error: 'Failed to get votes' }, { status: 500 })
   }
 }
