@@ -29,6 +29,8 @@ export default function MeetupPage() {
   const [submitting, setSubmitting] = useState(false)
   const [votingEndsAt, setVotingEndsAt] = useState<Date | null>(null)
   const [timeRemaining, setTimeRemaining] = useState<string | null>(null)
+  const [submittedCount, setSubmittedCount] = useState(0)
+  const [totalParticipants, setTotalParticipants] = useState(0)
 
   const fetchMeetup = useCallback(async () => {
     try {
@@ -43,6 +45,8 @@ export default function MeetupPage() {
           const votesData = await votesRes.json()
           setVoteCounts(votesData.counts || {})
           if (votesData.votingEndsAt) setVotingEndsAt(new Date(votesData.votingEndsAt))
+          setSubmittedCount(votesData.submittedCount ?? 0)
+          setTotalParticipants(votesData.totalParticipants ?? 0)
         }
       }
     } catch {
@@ -80,6 +84,11 @@ export default function MeetupPage() {
     const interval = setInterval(tick, 1000)
     return () => clearInterval(interval)
   }, [votingEndsAt, meetup?.status, fetchMeetup])
+
+  // Scroll to top when winner is decided
+  useEffect(() => {
+    if (meetup?.status === 'decided') window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [meetup?.status])
 
   const toggleVenue = (placeId: string) => {
     if (hasSubmittedVotes) return
@@ -190,6 +199,9 @@ export default function MeetupPage() {
               </div>
             ))}
           </div>
+          {meetup.status === 'voting' && totalParticipants > 0 && (
+            <p className="text-sm text-brand-muted mt-3">{submittedCount} of {totalParticipants} people have voted</p>
+          )}
         </div>
       </div>
 
@@ -213,20 +225,44 @@ export default function MeetupPage() {
             <MeetupMap locations={meetup.locations ?? []} venues={filtered} />
 
             {meetup.status === 'voting' && (
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <h2 className="text-xl font-bold text-gray-900">🎯 Pick your favorites</h2>
-                <div className="flex items-center gap-3">
-                  {timeRemaining && (
-                    <span className="text-sm font-medium text-brand-muted">Voting closes in {timeRemaining}</span>
-                  )}
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4].map(level => (
-                      <button key={level} type="button" onClick={() => setPriceLevels(prev => { const n = new Set(prev); if (n.has(level)) n.delete(level); else n.add(level); return n })} className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${priceLevels.has(level) ? 'bg-primary-500 text-white' : 'bg-white text-brand-muted border border-brand-border'}`}>
-                        {'$'.repeat(level)}
-                      </button>
-                    ))}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <h2 className="text-xl font-bold text-gray-900">🎯 Pick your favorites</h2>
+                  <div className="flex items-center gap-3">
+                    {timeRemaining && (
+                      <span className="text-sm font-medium text-brand-muted">Voting closes in {timeRemaining}</span>
+                    )}
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map(level => (
+                        <button key={level} type="button" onClick={() => setPriceLevels(prev => { const n = new Set(prev); if (n.has(level)) n.delete(level); else n.add(level); return n })} className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${priceLevels.has(level) ? 'bg-primary-500 text-white' : 'bg-white text-brand-muted border border-brand-border'}`}>
+                          {'$'.repeat(level)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
+
+                {!hasSubmittedVotes && (
+                  <>
+                    <p className="text-sm text-brand-muted">Tap the venues you'd be happy with, then click Done Voting.</p>
+                    <div className="card space-y-3">
+                      <button onClick={() => submitVotes(false)} disabled={submitting || selectedVenueIds.size === 0} className="btn-primary w-full py-3 text-base">
+                        {submitting ? 'Submitting…' : `Done Voting (${selectedVenueIds.size} selected)`}
+                      </button>
+                      <button onClick={() => submitVotes(true)} disabled={submitting} className="btn-secondary w-full py-3 text-base">
+                        {submitting ? 'Submitting…' : "I'm good with anything"}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {hasSubmittedVotes && (
+                  <div className="text-center py-6 bg-white rounded-lg shadow">
+                    <Check size={24} className="mx-auto text-primary-500 mb-2" />
+                    <p className="text-brand-dark font-medium">Your votes are in!</p>
+                    <p className="text-sm text-brand-muted mt-1">Waiting for others…</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -255,25 +291,6 @@ export default function MeetupPage() {
               </div>
             )}
 
-            {/* Voting controls */}
-            {meetup.status === 'voting' && !hasSubmittedVotes && (
-              <div className="card space-y-3">
-                <button onClick={() => submitVotes(false)} disabled={submitting || selectedVenueIds.size === 0} className="btn-primary w-full py-3 text-base">
-                  {submitting ? 'Submitting…' : `Done Voting (${selectedVenueIds.size} selected)`}
-                </button>
-                <button onClick={() => submitVotes(true)} disabled={submitting} className="btn-secondary w-full py-3 text-base">
-                  {submitting ? 'Submitting…' : "I'm good with anything"}
-                </button>
-              </div>
-            )}
-
-            {meetup.status === 'voting' && hasSubmittedVotes && (
-              <div className="text-center py-6 bg-white rounded-lg shadow">
-                <Check size={24} className="mx-auto text-primary-500 mb-2" />
-                <p className="text-brand-dark font-medium">Your votes are in!</p>
-                <p className="text-sm text-brand-muted mt-1">Waiting for others…</p>
-              </div>
-            )}
           </div>
         )
       })()}
