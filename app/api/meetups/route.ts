@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../lib/supabase-server'
 import { calculateOptimalMidpoint } from '../../lib/midpoint'
+import { fetchAndSaveVenues } from '../../lib/venues'
+import { VOTING_DURATION_MS } from '../../lib/constants'
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,11 +42,16 @@ export async function POST(req: NextRequest) {
     // Midpoint is set by /api/locations when a second person joins.
     if (locations.length >= 2) {
       const midpoint = await calculateOptimalMidpoint(locations)
+      const votingEndsAt = new Date(Date.now() + VOTING_DURATION_MS).toISOString()
       const { error: updateError } = await supabaseAdmin
         .from('meetups')
-        .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng, status: 'voting' })
+        .update({ midpoint_lat: midpoint.lat, midpoint_lng: midpoint.lng, status: 'voting', voting_ends_at: votingEndsAt })
         .eq('id', meetup.id)
       if (updateError) throw updateError
+
+      const types = (venueTypes && venueTypes.length > 0) ? venueTypes : ['restaurant']
+      await fetchAndSaveVenues(midpoint.lat, midpoint.lng, meetup.id, { types })
+
       return NextResponse.json(
         { id: meetup.id, shareToken: meetupFull.share_token, adminToken: meetupFull.admin_token, midpoint },
         { status: 201 }
