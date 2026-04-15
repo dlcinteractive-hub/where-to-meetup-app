@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MapPin } from 'lucide-react'
+import { MapPin, X, Plus } from 'lucide-react'
 import AddressAutocomplete from './components/ui/AddressAutocomplete'
 
 export default function HomePage() {
@@ -11,6 +11,9 @@ export default function HomePage() {
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
+  const [proxyLocations, setProxyLocations] = useState<{ address: string; lat: number; lng: number }[]>([])
+  const [proxyAddress, setProxyAddress] = useState('')
+  const [addingProxy, setAddingProxy] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -25,6 +28,19 @@ export default function HomePage() {
       return await response.json()
     } catch {
       return null
+    }
+  }
+
+  const addProxy = async () => {
+    if (!proxyAddress.trim() || addingProxy) return
+    setAddingProxy(true)
+    try {
+      const coords = await geocodeAddress(proxyAddress)
+      if (!coords) { alert('Could not find that address.'); return }
+      setProxyLocations(prev => [...prev, { address: proxyAddress.trim(), ...coords }])
+      setProxyAddress('')
+    } finally {
+      setAddingProxy(false)
     }
   }
 
@@ -47,7 +63,10 @@ export default function HomePage() {
         body: JSON.stringify({
           title: title || 'Meetup',
           creatorName: creatorName || 'Anonymous',
-          locations: [{ name: name || address, address, lat: coords.lat, lng: coords.lng }],
+          locations: [
+            { name: name || address, address, lat: coords.lat, lng: coords.lng },
+            ...proxyLocations.map(p => ({ name: p.address, address: p.address, lat: p.lat, lng: p.lng })),
+          ],
           venueTypes: selectedTypes.length > 0 ? selectedTypes : ['restaurant'],
         }),
       })
@@ -130,6 +149,36 @@ export default function HomePage() {
               required
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-brand-dark mb-3">
+            Add locations for others (optional)
+          </label>
+          <div className="flex gap-2">
+            <AddressAutocomplete
+              value={proxyAddress}
+              onChange={setProxyAddress}
+              placeholder="Their address, city, or landmark"
+              className="input-field flex-1"
+            />
+            <button type="button" onClick={addProxy} disabled={addingProxy || !proxyAddress.trim()} className="btn-secondary px-3 shrink-0">
+              {addingProxy ? '…' : <Plus size={18} />}
+            </button>
+          </div>
+          {proxyLocations.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {proxyLocations.map((p, i) => (
+                <div key={i} className="flex items-center gap-2 p-2 bg-brand-light rounded-lg text-sm">
+                  <MapPin size={14} className="text-brand-muted shrink-0" />
+                  <span className="flex-1 text-brand-dark truncate">{p.address}</span>
+                  <button type="button" onClick={() => setProxyLocations(prev => prev.filter((_, j) => j !== i))} className="shrink-0 p-0.5 text-brand-muted hover:text-red-500">
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>

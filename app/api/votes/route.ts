@@ -86,17 +86,7 @@ export async function POST(req: NextRequest) {
       .from('participant_votes')
       .insert({ meetup_id: meetupId, voter_ip: voterIp })
 
-    // Check if all participants have voted or timer expired
-    const { count: totalParticipants } = await supabaseAdmin
-      .from('locations')
-      .select('id', { count: 'exact', head: true })
-      .eq('meetup_id', meetupId)
-
-    const { count: submittedCount } = await supabaseAdmin
-      .from('participant_votes')
-      .select('id', { count: 'exact', head: true })
-      .eq('meetup_id', meetupId)
-
+    // Check if timer expired
     const { data: meetup } = await supabaseAdmin
       .from('meetups')
       .select('voting_ends_at, status')
@@ -106,9 +96,8 @@ export async function POST(req: NextRequest) {
     let decided = false
     let winner = null
     const timerExpired = meetup?.voting_ends_at && new Date(meetup.voting_ends_at) <= new Date()
-    const allVoted = (submittedCount ?? 0) >= (totalParticipants ?? 1)
 
-    if (meetup?.status !== 'decided' && (allVoted || timerExpired)) {
+    if (meetup?.status !== 'decided' && timerExpired) {
       winner = await decide(meetupId)
       decided = !!winner
     }

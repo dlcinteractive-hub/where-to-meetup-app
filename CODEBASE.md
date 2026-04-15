@@ -5,9 +5,9 @@
 | Field | Value |
 |-------|-------|
 | **Current Phase** | Phase 3 — Filters, Preferences & Polish (in progress) |
-| **Last Verified Good State** | Approval voting system with timer, done button, auto-decide. 75eb2e69 chore: bump to 0.1.5, update CODEBASE.md |
+| **Last Verified Good State** | Proxy locations, share link display. 7ca98d16 fix: voting UX improvements |
 | **Open Issues** | Rotate Google Maps + Supabase keys. Change VOTING_DURATION_MS before launch (currently 1 minute). |
-| **Version** | 0.1.6 |
+| **Version** | 0.1.7 |
 | **Branch** | main |
 
 **Before starting any Claude Code session:** Read this block + the current phase section below. Do not proceed if Open Issues lists an unresolved blocker.

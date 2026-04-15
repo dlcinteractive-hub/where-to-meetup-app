@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { MapPin, Users, Share2, Check, X, Trophy } from 'lucide-react'
+import { MapPin, Users, Check, X, Trophy } from 'lucide-react'
 import { Venue, Location, Meetup } from '../../lib/types'
 import AddLocationForm from '../../components/meetup/AddLocationForm'
 import VenueCard from '../../components/meetup/VenueCard'
@@ -122,7 +122,7 @@ export default function MeetupPage() {
     }
   }
 
-  const handleShare = async () => {
+  const handleCopy = async () => {
     const url = window.location.href
     try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000) }
     catch { prompt('Copy this link to share:', url) }
@@ -175,10 +175,17 @@ export default function MeetupPage() {
             {meetup.creator_name && <p className="text-gray-600">Organized by {meetup.creator_name}</p>}
           </div>
           {meetup.status !== 'decided' && (
-            <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shrink-0">
-              {copied ? <Check size={16} className="text-green-600" /> : <Share2 size={16} />}
-              {copied ? 'Link copied!' : 'Invite'}
-            </button>
+            <div className="flex gap-2 shrink-0">
+              <input
+                type="text"
+                readOnly
+                value={typeof window !== 'undefined' ? window.location.href : ''}
+                className="border border-brand-border rounded-xl px-3 py-2 text-sm text-brand-muted bg-brand-light w-40 sm:w-56 truncate"
+              />
+              <button onClick={handleCopy} className="btn-primary text-sm px-3 py-2 shrink-0">
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
           )}
         </div>
         <div className="mt-4 space-y-2">
