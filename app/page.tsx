@@ -14,6 +14,7 @@ export default function HomePage() {
   const [proxyLocations, setProxyLocations] = useState<{ address: string; lat: number; lng: number }[]>([])
   const [proxyAddress, setProxyAddress] = useState('')
   const [addingProxy, setAddingProxy] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -103,83 +104,86 @@ export default function HomePage() {
 
       <form onSubmit={handleSubmit} className="card space-y-6">
         <div>
-          <label className="block text-sm font-medium text-brand-dark mb-2">
-            Meetup Title (optional)
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Weekend lunch, Team meetup, etc."
-            className="input-field"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-brand-dark mb-2">
-            Your Name (optional)
-          </label>
-          <input
-            type="text"
-            value={creatorName}
-            onChange={(e) => setCreatorName(e.target.value)}
-            placeholder="Who's organizing this?"
-            className="input-field"
-          />
-        </div>
-
-        <div>
           <label className="block text-sm font-medium text-brand-dark mb-4">
             <MapPin size={16} className="inline mr-1" />
             Your Starting Location
           </label>
-          <div className="space-y-2">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name for this location (optional)"
-              className="input-field"
-            />
-            <AddressAutocomplete
-              value={address}
-              onChange={setAddress}
-              placeholder="Address, city, or landmark"
-              className="input-field"
-              required
-            />
-          </div>
+          <AddressAutocomplete
+            value={address}
+            onChange={setAddress}
+            placeholder="Address, city, or landmark"
+            className="input-field"
+            required
+          />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-brand-dark mb-3">
-            Add locations for others (optional)
-          </label>
-          <div className="flex gap-2">
-            <AddressAutocomplete
-              value={proxyAddress}
-              onChange={setProxyAddress}
-              placeholder="Their address, city, or landmark"
-              className="input-field flex-1"
-            />
-            <button type="button" onClick={addProxy} disabled={addingProxy || !proxyAddress.trim()} className="btn-secondary px-3 shrink-0">
-              {addingProxy ? '…' : <Plus size={18} />}
-            </button>
-          </div>
-          {proxyLocations.length > 0 && (
-            <div className="mt-2 space-y-1">
-              {proxyLocations.map((p, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 bg-brand-light rounded-lg text-sm">
-                  <MapPin size={14} className="text-brand-muted shrink-0" />
-                  <span className="flex-1 text-brand-dark truncate">{p.address}</span>
-                  <button type="button" onClick={() => setProxyLocations(prev => prev.filter((_, j) => j !== i))} className="shrink-0 p-0.5 text-brand-muted hover:text-red-500">
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
+        <button
+          type="button"
+          onClick={() => setShowDetails(prev => !prev)}
+          className="text-sm text-primary-500 hover:text-primary-600 font-medium"
+        >
+          {showDetails ? 'Hide details \u25B4' : 'Add details (optional) \u25BE'}
+        </button>
+
+        {showDetails && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-brand-dark mb-2">
+                Meetup Title
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Weekend lunch, Team meetup, etc."
+                className="input-field"
+              />
             </div>
-          )}
-        </div>
+
+            <div>
+              <label className="block text-sm font-medium text-brand-dark mb-2">
+                Your Name
+              </label>
+              <input
+                type="text"
+                value={creatorName}
+                onChange={(e) => setCreatorName(e.target.value)}
+                placeholder="Who's organizing this?"
+                className="input-field"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-brand-dark mb-3">
+                Add locations for others
+              </label>
+              <div className="flex gap-2">
+                <AddressAutocomplete
+                  value={proxyAddress}
+                  onChange={setProxyAddress}
+                  placeholder="Their address, city, or landmark"
+                  className="input-field flex-1"
+                />
+                <button type="button" onClick={addProxy} disabled={addingProxy || !proxyAddress.trim()} className="btn-secondary px-3 shrink-0">
+                  {addingProxy ? '…' : <Plus size={18} />}
+                </button>
+              </div>
+              {proxyLocations.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {proxyLocations.map((p, i) => (
+                    <div key={i} className="flex items-center gap-2 p-2 bg-brand-light rounded-lg text-sm">
+                      <MapPin size={14} className="text-brand-muted shrink-0" />
+                      <span className="flex-1 text-brand-dark truncate">{p.address}</span>
+                      <button type="button" onClick={() => setProxyLocations(prev => prev.filter((_, j) => j !== i))} className="shrink-0 p-0.5 text-brand-muted hover:text-red-500">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-brand-dark mb-3">
