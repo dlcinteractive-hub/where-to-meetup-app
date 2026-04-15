@@ -1,6 +1,6 @@
 'use client'
 
-import { MapPin, Star, Clock, DollarSign, Check } from 'lucide-react'
+import { MapPin, Star, Clock, DollarSign, Check, Navigation } from 'lucide-react'
 import { Venue } from '../../lib/types'
 
 interface Props {
@@ -54,6 +54,12 @@ export default function VenueCard({ id, venue, isSelected, hasSubmitted, isWinne
               <MapPin size={14} className="mt-0.5 shrink-0" />
               {venue.address}
             </p>
+            {venue.distance_from_midpoint != null && venue.avg_travel_time != null && (
+              <p className="text-xs text-brand-muted flex items-center gap-1 mt-0.5">
+                <Navigation size={12} className="shrink-0" />
+                ~{venue.avg_travel_time} min · {venue.distance_from_midpoint} mi from midpoint
+              </p>
+            )}
           </div>
           {!locked && (
             <div className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${

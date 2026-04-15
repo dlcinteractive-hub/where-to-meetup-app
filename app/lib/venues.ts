@@ -1,5 +1,6 @@
 import { supabaseAdmin } from './supabase-server'
 import { rankVenuesWithAI } from './rank'
+import { calculateDistance } from './midpoint'
 
 interface VenueRow {
   meetup_id: string
@@ -13,16 +14,18 @@ interface VenueRow {
   types: string[]
   photo_reference: string | null
   opening_hours: any
+  distance_from_midpoint: number | null
+  avg_travel_time: number | null
 }
 
-async function fetchPlacesByType(lat: number, lng: number, type: string, radius: number, apiKey: string): Promise<VenueRow[]> {
+async function fetchPlacesByType(lat: number, lng: number, type: string, radius: number, apiKey: string): Promise<Omit<VenueRow, 'distance_from_midpoint' | 'avg_travel_time'>[]> {
   const url =
     `https://maps.googleapis.com/maps/api/place/nearbysearch/json` +
     `?location=${lat},${lng}&radius=${radius}&type=${type}&key=${apiKey}`
   const response = await fetch(url)
   const data = await response.json()
   if (data.status !== 'OK') return []
-  return data.results.slice(0, 10).map((place: any) => ({
+  return data.results.slice(0, 20).map((place: any) => ({
     meetup_id: '',
     place_id: place.place_id,
     name: place.name,
@@ -46,7 +49,6 @@ export async function fetchAndSaveVenues(
   const apiKey = process.env.GOOGLE_MAPS_API_KEY
   if (!apiKey) throw new Error('Maps API not configured')
 
-  // Parallel fetch per type, then deduplicate by place_id
   const results = await Promise.all(
     types.map(t => fetchPlacesByType(lat, lng, t, radius, apiKey))
   )
@@ -56,12 +58,19 @@ export async function fetchAndSaveVenues(
     for (const v of batch) {
       if (!seen.has(v.place_id)) {
         seen.add(v.place_id)
-        merged.push({ ...v, meetup_id: meetupId })
+        const distKm = calculateDistance(lat, lng, v.lat, v.lng)
+        const distMiles = Math.round(distKm * 0.621371 * 10) / 10
+        const driveMinutes = Math.round((distMiles / 25) * 60)
+        merged.push({
+          ...v,
+          meetup_id: meetupId,
+          distance_from_midpoint: distMiles,
+          avg_travel_time: driveMinutes,
+        })
       }
     }
   }
 
-  // AI ranking — graceful degradation if unavailable
   const ranked = await rankVenuesWithAI(merged)
 
   const { data: saved, error } = await supabaseAdmin
