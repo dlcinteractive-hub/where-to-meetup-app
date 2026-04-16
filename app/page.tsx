@@ -122,7 +122,7 @@ export default function HomePage() {
           onClick={() => setShowDetails(prev => !prev)}
           className="text-sm text-primary-500 hover:text-primary-600 font-medium"
         >
-          {showDetails ? 'Hide details \u25B4' : 'Add details (optional) \u25BE'}
+          {showDetails ? 'Hide \u25B4' : 'Add details or Participants \u25BE'}
         </button>
 
         {showDetails && (
